@@ -165,7 +165,9 @@ workflows:
       - validate-code
       - build-image:
           requires: [validate-code]
-      - create-eks-cluster:
-          requires: [build-image]
+      # - create-eks-cluster:
+      #     requires: [build-image]
       - deploy:
-          requires: [create-eks-cluster]
+          requires: [build-image]
+      - smoke-test:
+          requires: [deploy]
