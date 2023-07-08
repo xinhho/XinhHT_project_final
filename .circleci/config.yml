@@ -69,6 +69,49 @@ jobs:
             docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD            
             docker push "xinhho/cloud-devops-project5:${CIRCLE_WORKFLOW_ID:0:7}"
 
+  create-eks-cluster:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: install eksctl
+          command: |
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            mv /tmp/eksctl /usr/local/bin
+      - run: 
+          name: Create cluster if not exist
+          command: |
+            if [ eksctl get cluster  --name "my-eksctl" --region=us-east-1 ] ; then
+              echo "Cluster already exist"
+            else
+              eksctl create cluster --name "my-eksctl" --region=us-east-1
+            fi
+
+  deploy:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Install kubectl
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+            install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      - run:
+          name: Config kubectl connect to aws
+          command: |
+            aws eks update-kubeconfig --region us-east-1  --name my-eksctl
+      - run:
+          name: create deployment
+          command: |
+            kubectl create deployment cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment --image=xinhho/cloud-devops-project5:${CIRCLE_WORKFLOW_ID:0:7} --port 80
+      - run:
+          name: expose deployment
+          command: |
+            kubectl expose deployment cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment --type=LoadBalancer --port=80
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
@@ -77,3 +120,5 @@ workflows:
     jobs:
       - validate-code
       - build-image
+      - create-eks-cluster
+      - deploy
