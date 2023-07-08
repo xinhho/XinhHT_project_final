@@ -9,9 +9,7 @@ jobs:
     docker:
       # Use the same Docker base as the project
       - image: python:3.7.3-stretch
-
     working_directory: ~/repo
-
     steps:
       - checkout
 
@@ -128,34 +126,34 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ip_address.txt
-  
-  docker:
-      - image: python:3.7.3-stretch
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update curl
-      - run:
-          name: Smoke test.
-          command: |
-            cd .circleci
-          
-            export APP_IP=$(cat ip_address.txt)
-            
-            export APP_ENDPOINT="http://${APP_IP}/greeting"
+    smoke-test:
+      docker:
+          - image: python:3.7.3-stretch
+        steps:
+          - checkout
+          - attach_workspace:
+              at: ~/
+          - run:
+              name: Install dependencies
+              command: |
+                apk add --update curl
+          - run:
+              name: Smoke test.
+              command: |
+                cd .circleci
+              
+                export APP_IP=$(cat ip_address.txt)
+                
+                export APP_ENDPOINT="http://${APP_IP}/greeting"
 
-            echo ${APP_ENDPOINT} 
-  
-            if curl ${APP_ENDPOINT} | grep "Greeting"
-            then
-              return 0
-            else
-              return 1
-            fi 
+                echo ${APP_ENDPOINT} 
+      
+                if curl ${APP_ENDPOINT} | grep "Greeting"
+                then
+                  return 0
+                else
+                  return 1
+                fi 
 
 
 
