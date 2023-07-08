@@ -119,6 +119,9 @@ workflows:
   my-workflow:
     jobs:
       - validate-code
-      - build-image
-      - create-eks-cluster
-      - deploy
+      - build-image:
+          requires: [validate-code]
+      - create-eks-cluster:
+          requires: [build-image]
+      - deploy:
+          requires: [create-eks-cluster]
