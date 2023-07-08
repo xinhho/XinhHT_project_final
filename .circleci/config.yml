@@ -73,21 +73,11 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            docker build --cache-from=app -t app .
-      - run:
-          name: Save Docker image layer cache
-          command: |
-            mkdir -p /caches
-            docker save -o /caches/app.tar app
-      - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
-          paths:
-            - /caches/app.tar
+            docker build  -t xinhho/cloud-devops-project5:${CIRCLE_WORKFLOW_ID:0:7} .
       - deploy:
           name: Push application Docker image
           command: |
-            docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
-            docker tag app "xinhho/cloud-devops-project5:${CIRCLE_WORKFLOW_ID:0:7}"
+            docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD            
             docker push "xinhho/cloud-devops-project5:${CIRCLE_WORKFLOW_ID:0:7}"
 
 
