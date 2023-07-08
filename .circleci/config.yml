@@ -90,7 +90,7 @@ jobs:
             if [ eksctl get cluster  --name "my-eksctl" --region=us-east-1 ] ; then
               echo "Cluster already exist"
             else
-              eksctl create cluster --name "my-eksctl" --region=us-east-1 --nodes=2 --node-type=m3.medium --node-zones=us-east-1a,us-east-1b,us-east-1c 
+              eksctl create cluster --name "my-eksctl" --region=us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
             fi
 
   deploy:
