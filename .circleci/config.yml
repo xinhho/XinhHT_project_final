@@ -111,11 +111,53 @@ jobs:
       - run:
           name: create deployment
           command: |
-            kubectl create deployment cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment --image=xinhho/cloud-devops-project5:${CIRCLE_WORKFLOW_ID:0:7} --port 80
+            kubectl create deployment cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment --image="xinhho/cloud-devops-project5:${CIRCLE_WORKFLOW_ID:0:7}" --port 80
       - run:
           name: expose deployment
           command: |
             kubectl expose deployment cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment --type=LoadBalancer --port=80
+            sleep 1m
+      - run:
+          name: extract IP address of app
+          command: |
+            cd .circleci
+            
+            ip_address=$(kubectl get services cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment --output jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            echo $ip_address >> ip_address.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ip_address.txt
+  
+  docker:
+      - image: python:3.7.3-stretch
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update curl
+      - run:
+          name: Smoke test.
+          command: |
+            cd .circleci
+          
+            export APP_IP=$(cat ip_address.txt)
+            
+            export APP_ENDPOINT="http://${APP_IP}/greeting"
+
+            echo ${APP_ENDPOINT} 
+  
+            if curl ${APP_ENDPOINT} | grep "Greeting"
+            then
+              return 0
+            else
+              return 1
+            fi 
+
+
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
