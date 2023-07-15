@@ -143,13 +143,14 @@ jobs:
             export APP_ENDPOINT="http://${APP_IP}/greeting"
 
             echo ${APP_ENDPOINT} 
-  
-            if curl ${APP_ENDPOINT} | grep Greeting
+            sleep 30s
+
+            if curl ${APP_ENDPOINT} | grep "Greeting"
             then
               return 0
             else
               return 1
-            fi 
+            fi
 
   cleanup:
     docker:
