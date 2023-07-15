@@ -85,7 +85,8 @@ jobs:
       - run: 
           name: Create cluster if not exist
           command: |
-            if [ eksctl get cluster  --name "my-eksctl" --region=us-east-1 ] ; then
+            if eksctl get cluster  --name "my-eksctl" --region=us-east-1
+            then
               echo "Cluster already exist"
             else
               eksctl create cluster --name "my-eksctl" --region=us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
@@ -170,10 +171,15 @@ jobs:
       - run:
           name: Get services in kubectl
           command: |
-            kubectl get services | grep cloud-devops-project5 > temp.txt
+            kubectl get services | grep cloud-devops-project5 > temp.txt            
             sed 's/ .*//' temp.txt > old_services.txt 
             SERVICE=cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment
-            kubectl delete service $(cat  old_services.txt| sed 's/'$SERVICE'//g' | sed -r '/^\s*$/d')
+            kubectl delete service $(cat old_services.txt | sed 's/'$SERVICE'//g' | sed -r '/^\s*$/d')
+
+            kubectl get deploy | grep cloud-devops-project5 > temp.txt
+            sed 's/ .*//' temp.txt > old_deploys.txt
+            DEPLOYMENT=cloud-devops-project5-${CIRCLE_WORKFLOW_ID:0:7}-deployment
+            kubectl delete deploy $(cat old_deploys.txt | sed 's/'$DEPLOYMENT'//g' | sed -r '/^\s*$/d')
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
