@@ -144,7 +144,7 @@ jobs:
 
             echo ${APP_ENDPOINT} 
   
-            if curl ${APP_ENDPOINT} | grep "Greeting"
+            if curl ${APP_ENDPOINT} | grep Greeting
             then
               return 0
             else
@@ -190,3 +190,6 @@ workflows:
           requires: [deploy]
       - cleanup:
           requires: [smoke-test]
+
+Greeting
+Greeting
