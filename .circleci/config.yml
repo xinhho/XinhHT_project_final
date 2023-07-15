@@ -190,6 +190,3 @@ workflows:
           requires: [deploy]
       - cleanup:
           requires: [smoke-test]
-
-Greeting
-Greeting
