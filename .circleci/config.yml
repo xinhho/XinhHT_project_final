@@ -136,21 +136,21 @@ jobs:
       - run:
           name: Smoke test.
           command: |
-            cd .circleci
-          
-            export APP_IP=$(cat ip_address.txt)
+              cd .circleci
             
-            export APP_ENDPOINT="http://${APP_IP}/greeting"
+              export APP_IP=$(cat ip_address.txt)
+              
+              export APP_ENDPOINT="http://${APP_IP}/greeting"
 
-            echo ${APP_ENDPOINT} 
-            sleep 30s
-
-            if curl ${APP_ENDPOINT} | grep "Greeting"
-            then
-              return 0
-            else
-              return 1
-            fi
+              echo ${APP_ENDPOINT} 
+              sleep 30s
+              curl ${APP_ENDPOINT} > test.txt
+              if cat test.txt | grep "Greeting"
+              then
+                exit 0
+              else
+                exit 1
+              fi
 
   cleanup:
     docker:
