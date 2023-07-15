@@ -134,10 +134,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Install dependencies
-          command: |
-            apk add --update curl
-      - run:
           name: Smoke test.
           command: |
             cd .circleci
@@ -155,7 +151,28 @@ jobs:
               return 1
             fi 
 
-
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Install kubectl
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+            install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      - run:
+          name: Config kubectl connect to aws
+          command: |
+            aws eks update-kubeconfig --region us-east-1  --name my-eksctl
+      - run:
+          name: Get services in kubectl
+          command: |
+            kubectl get services | grep publicapp > tmp-services.txt
+            sed 's/ .*//' tmp-services.txt > services.txt 
+            SERVICE=publicapp-${CIRCLE_WORKFLOW_ID:0:7}
+            kubectl delete service $(cat  services.txt| sed 's/'$SERVICE'//g' | sed -r '/^\s*$/d')
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
@@ -165,9 +182,11 @@ workflows:
       - validate-code
       - build-image:
           requires: [validate-code]
-      - create-eks-cluster:
-          requires: [build-image]
+      # - create-eks-cluster:
+      #     requires: [build-image]
       - deploy:
-          requires: [create-eks-cluster]
+          requires: [build-image]
       - smoke-test:
           requires: [deploy]
+      - cleanup:
+          requires: [smoke-test]
