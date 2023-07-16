@@ -1,4 +1,5 @@
 ## Github Repo: https://github.com/xinhho/XinhHT_project_final
+## pipeline Url: https://app.circleci.com/pipelines/github/xinhho/XinhHT_project_final
 
 ## Setup the Environment
 
