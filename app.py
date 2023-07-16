@@ -6,4 +6,4 @@ app = Flask(__name__)
 def index():
     return 'Greeting. This is version 2'
 
-  app.run(host='0.0.0.0', port=80)
+app.run(host='0.0.0.0', port=80)
